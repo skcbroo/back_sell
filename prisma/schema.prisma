@@ -27,3 +27,16 @@ model Credito {
   cedente        Cedente @relation(fields: [cedenteId], references: [id])
   createdAt      DateTime @default(now())
 }
+
+model LogEvent {
+  id        String   @id @default(cuid())
+  type      String
+  ts        DateTime
+  sessionId String?
+  userId    String?
+  url       String?
+  referrer  String?
+  ua        String?
+  lang      String?
+  props     Json
+}
