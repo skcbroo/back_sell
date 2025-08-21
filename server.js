@@ -45,6 +45,7 @@ app.post("/api/solicitacoes", async (req, res) => {
 // ROTA: Logs de eventos DIY
 // =========================
 app.post("/api/logs", async (req, res) => {
+  console.log("Body sample:", Array.isArray(req.body?.events) ? req.body.events[0] : req.body);
   try {
     const events = Array.isArray(req.body?.events) ? req.body.events : [];
     if (events.length === 0) {
