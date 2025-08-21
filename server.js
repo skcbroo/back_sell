@@ -51,7 +51,6 @@ app.post("/api/logs", async (req, res) => {
       return res.status(400).json({ error: "Nenhum evento recebido" });
     }
 
-    // Sanitiza dados básicos
     const sanitized = events.map((e) => ({
       type: String(e?.type || "unknown").slice(0, 64),
       ts: new Date(e?.ts || Date.now()),
@@ -64,26 +63,19 @@ app.post("/api/logs", async (req, res) => {
       props: e?.props && typeof e.props === "object" ? e.props : {},
     }));
 
-    await prisma.logEvent.createMany({
-      data: sanitized.map((e) => ({
-        type: e.type,
-        ts: e.ts,
-        sessionId: e.sessionId,
-        userId: e.userId,
-        url: e.url,
-        referrer: e.referrer,
-        ua: e.ua,
-        lang: e.lang,
-        props: e.props,
-      })),
+    const result = await prisma.logEvent.createMany({
+      data: sanitized,
+      // skipDuplicates: true, // (mantenha falso por enquanto)
     });
 
-    res.json({ ok: true, received: sanitized.length });
+    console.log("createMany result:", result); // { count: N }
+    res.json({ ok: true, received: sanitized.length, inserted: result.count });
   } catch (error) {
     console.error("Erro ao registrar log:", error);
     res.status(500).json({ error: "Erro ao registrar log" });
   }
 });
+
 
 
 // =========================
