@@ -76,13 +76,11 @@ app.post("/api/logs", async (req, res) => {
       props: e?.props && typeof e.props === "object" ? e.props : {},
     }));
 
-    const result = await prisma.logEvent.createMany({
-      data: sanitized,
-      // skipDuplicates: true,
-    });
+    const result = await Promise.all(
+      sanitized.map((data) => prisma.logEvent.create({ data }))
+    );
 
-    console.log("createMany result:", result); // { count: N }
-    res.json({ ok: true, received: sanitized.length, inserted: result.count });
+    res.json({ ok: true, received: sanitized.length, inserted: result.length });
   } catch (error) {
     console.error("Erro ao registrar log:", error);
     res.status(500).json({ error: "Erro ao registrar log" });
