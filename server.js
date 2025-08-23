@@ -1,3 +1,6 @@
+// ====================
+// CONFIGURAÇÕES INICIAIS
+// ====================
 import express from "express";
 import cors from "cors";
 import { PrismaClient } from "@prisma/client";
@@ -7,7 +10,16 @@ dotenv.config();
 const app = express();
 const prisma = new PrismaClient();
 
-app.use(cors());
+// ====================
+// CONFIGURAR CORS
+// ====================
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173"; // ou sua URL real
+
+app.use(cors({
+  origin: FRONTEND_URL,
+  credentials: true,
+}));
+
 app.use(express.json());
 
 
@@ -66,7 +78,7 @@ app.post("/api/logs", async (req, res) => {
 
     const result = await prisma.logEvent.createMany({
       data: sanitized,
-      // skipDuplicates: true, // (mantenha falso por enquanto)
+      // skipDuplicates: true,
     });
 
     console.log("createMany result:", result); // { count: N }
@@ -78,11 +90,11 @@ app.post("/api/logs", async (req, res) => {
 });
 
 
-
 // =========================
-// Start
+// INICIALIZAÇÃO DO SERVIDOR
 // =========================
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`🚀 Backend rodando na porta ${PORT}`);
+  console.log(`✅ Aceitando requisições de: ${FRONTEND_URL}`);
 });
