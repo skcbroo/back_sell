@@ -8,26 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Cedente {
-  id        Int      @id @default(autoincrement())
-  nome      String
-  cpfCnpj   String
-  telefone  String
-  email     String
-  createdAt DateTime @default(now())
-  creditos  Credito[]
-}
-
-model Credito {
-  id             Int      @id @default(autoincrement())
-  numeroProcesso String
-  valorCausa     Float
-  status         String   @default("pendente")
-  cedenteId      Int
-  cedente        Cedente @relation(fields: [cedenteId], references: [id])
-  createdAt      DateTime @default(now())
-}
-
 model LogEvent {
   id        String   @id @default(cuid())
   type      String
