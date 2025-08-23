@@ -22,34 +22,8 @@ app.use(cors({
 
 app.use(express.json());
 
-
-// =========================
-// ROTA: Solicitação de venda
-// =========================
-app.post("/api/solicitacoes", async (req, res) => {
-  try {
-    const { nome, cpfCnpj, telefone, email, numeroProcesso, valorCausa } = req.body;
-
-    const cedente = await prisma.cedente.create({
-      data: {
-        nome,
-        cpfCnpj,
-        telefone,
-        email,
-        creditos: {
-          create: {
-            numeroProcesso,
-            valorCausa: parseFloat(valorCausa),
-          }
-        }
-      },
-    });
-
-    res.status(201).json({ message: "Solicitação registrada com sucesso!", cedente });
-  } catch (error) {
-    console.error("Erro ao registrar solicitação:", error);
-    res.status(500).json({ error: "Erro ao registrar solicitação" });
-  }
+app.get("/", (req, res) => {
+  res.send("🚀 API da Midlej Capital rodando com sucesso!");
 });
 
 
