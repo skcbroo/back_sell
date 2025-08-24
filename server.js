@@ -1,3 +1,6 @@
+// ====================
+// CONFIGURAÇÕES INICIAIS
+// ====================
 import express from "express";
 import cors from "cors";
 import { PrismaClient } from "@prisma/client";
@@ -7,24 +10,58 @@ dotenv.config();
 const app = express();
 const prisma = new PrismaClient();
 
+// ====================
+// CONFIGURAR CORS ROBUSTO
+// ====================
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
-
 const corsOptions = {
   origin: FRONTEND_URL,
   credentials: true,
 };
 
+// Middleware de CORS
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // 🔥 responde a todas as requisições OPTIONS
 
+// Tratamento manual de preflight (evita crash com `*`)
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin === FRONTEND_URL) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-Requested-With"
+    );
+    res.header(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+    );
+  }
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204); // resposta rápida pro navegador
+  }
+  next();
+});
+
+// Parser de JSON
 app.use(express.json());
 
+// ====================
+// ROTA DE TESTE
+// ====================
 app.get("/", (req, res) => {
   res.send("🚀 API da Midlej Capital rodando com sucesso!");
 });
 
+// ====================
+// ROTA: Logs de eventos DIY
+// ====================
 app.post("/api/logs", async (req, res) => {
-  console.log("Body sample:", Array.isArray(req.body?.events) ? req.body.events[0] : req.body);
+  console.log(
+    "📡 Body sample:",
+    Array.isArray(req.body?.events) ? req.body.events[0] : req.body
+  );
+
   try {
     const events = Array.isArray(req.body?.events) ? req.body.events : [];
     if (events.length === 0) {
@@ -49,14 +86,32 @@ app.post("/api/logs", async (req, res) => {
 
     res.json({ ok: true, received: sanitized.length, inserted: result.length });
   } catch (error) {
-    console.error("Erro ao registrar log:", error);
+    console.error("❌ Erro ao registrar log:", error);
     res.status(500).json({ error: "Erro ao registrar log" });
   }
 });
 
+// ====================
+// ROTA EXTRA: últimos logs (debug)
+// ====================
+app.get("/api/logs/latest", async (req, res) => {
+  try {
+    const logs = await prisma.logEvent.findMany({
+      orderBy: { id: "desc" },
+      take: 20,
+    });
+    res.json(logs);
+  } catch (error) {
+    console.error("❌ Erro ao buscar logs:", error);
+    res.status(500).json({ error: "Erro ao buscar logs" });
+  }
+});
+
+// ====================
+// INICIALIZAÇÃO DO SERVIDOR
+// ====================
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`🚀 Backend rodando na porta ${PORT}`);
   console.log(`✅ Aceitando requisições de: ${FRONTEND_URL}`);
 });
-
