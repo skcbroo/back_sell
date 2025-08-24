@@ -13,7 +13,7 @@ const prisma = new PrismaClient();
 // ====================
 // CONFIGURAR CORS ROBUSTO
 // ====================
-const FRONTEND_URL = "https://frontsell-sell.up.railway.app";
+const FRONTEND_URL = "https://proposta.midlejcapital.com.br";
 const corsOptions = {
   origin: FRONTEND_URL,
   credentials: true,
