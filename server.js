@@ -13,8 +13,7 @@ const prisma = new PrismaClient();
 // ====================
 // CONFIGURAR CORS
 // ====================
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173"; // ou sua URL real
-
+const FRONTEND_URL = process.env.FRONTEND_URL; // 
 app.use(cors({
   origin: FRONTEND_URL,
   credentials: true,
