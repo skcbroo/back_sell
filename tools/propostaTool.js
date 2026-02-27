@@ -1,30 +1,37 @@
-const { sendEmail } = require('../services/emailService');
+// tools/propostaTool.js (ESM)
+import { sendEmail } from "../services/emailService.js"; // se você usa email na finalização
 
-const tools = [
+export const tools = [
   {
-    type: 'function',
+    type: "function",
     function: {
-      name: 'finalizar_proposta',
-      description: 'Chame quando todas as informações obrigatórias forem coletadas: nomeEmpresa, cnpj, valor, tipo.',
+      name: "finalizar_proposta",
+      description:
+        "Finaliza a proposta quando todas as informações forem coletadas (nomeEmpresa, cnpj, valor, tipo, contato opcional).",
       parameters: {
-        type: 'object',
+        type: "object",
         properties: {
-          nomeEmpresa: { type: 'string' },
-          cnpj: { type: 'string' },
-          valor: { type: 'number' },
-          tipo: { type: 'string', enum: ['duplicata', 'cheque', 'contrato'] },
-          contato: { type: 'string' },
+          nomeEmpresa: { type: "string" },
+          cnpj: { type: "string" },
+          valor: { type: "string" },
+          tipo: { type: "string", enum: ["duplicata", "cheque", "contrato"] },
+          contato: { type: "string" }
         },
-        required: ['nomeEmpresa', 'cnpj', 'valor', 'tipo'],
-      },
-    },
-  },
+        required: ["nomeEmpresa", "cnpj", "valor", "tipo"],
+        additionalProperties: false
+      }
+    }
+  }
 ];
 
-async function executarFinalizacao(dados) {
-  console.log('Dados extraídos:', dados);
+export async function executarFinalizacao(dados) {
+  // aqui você faz o que já fazia: enviar email, salvar, etc.
   await sendEmail(dados);
-  return `Proposta recebida! Obrigado, ${dados.nomeEmpresa}. Nossa equipe analisará e entrará em contato.`;
-}
 
-module.exports = { tools, executarFinalizacao };
+  return `Perfeito! Recebi os dados e já encaminhei a proposta.\n\n` +
+    `Empresa: ${dados.nomeEmpresa}\n` +
+    `CNPJ: ${dados.cnpj}\n` +
+    `Valor: R$ ${dados.valor}\n` +
+    `Tipo: ${dados.tipo}\n` +
+    `Contato: ${dados.contato || "Não informado"}`;
+}
