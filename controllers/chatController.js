@@ -1,15 +1,12 @@
-const { getLLMResponse } = require('../services/llmService');
+import { getLLMResponse } from "../services/llmService.js"; // ajuste o caminho/nome se for outro
 
-async function handleChat(req, res) {
-  const { message, history } = req.body;
-
+export async function handleChat(req, res) {
   try {
-    const result = await getLLMResponse(message, history);
-    res.json({ response: result });
-  } catch (error) {
-    console.error('Erro no chat:', error);
-    res.status(500).json({ error: 'Erro interno' });
+    const { message, history } = req.body || {};
+    const resposta = await getLLMResponse(message, history || []);
+    return res.json({ reply: resposta });
+  } catch (err) {
+    console.error("handleChat error:", err);
+    return res.status(500).json({ error: "Erro interno" });
   }
 }
-
-module.exports = { handleChat };
