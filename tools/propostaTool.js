@@ -1,5 +1,5 @@
-// tools/propostaTool.js (ESM)
-import { sendEmail } from "../services/emailService.js"; // se você usa email na finalização
+// tools/propostaTool.js
+import { sendEmail } from "../services/emailService.js";
 
 export const tools = [
   {
@@ -11,11 +11,15 @@ export const tools = [
       parameters: {
         type: "object",
         properties: {
-          nomeEmpresa: { type: "string" },
-          cnpj: { type: "string" },
-          valor: { type: "string" },
-          tipo: { type: "string", enum: ["duplicata", "cheque", "contrato"] },
-          contato: { type: "string" }
+          nomeEmpresa: { type: "string", description: "Nome da empresa" },
+          cnpj: { type: "string", description: "CNPJ (com ou sem máscara)" },
+          valor: { type: "string", description: "Valor da proposta (ex: 100000 ou 100.000,00)" },
+          tipo: {
+            type: "string",
+            enum: ["duplicata", "cheque", "contrato"],
+            description: "Tipo do crédito"
+          },
+          contato: { type: "string", description: "Telefone/e-mail/contato (opcional)" }
         },
         required: ["nomeEmpresa", "cnpj", "valor", "tipo"],
         additionalProperties: false
@@ -24,14 +28,44 @@ export const tools = [
   }
 ];
 
-export async function executarFinalizacao(dados) {
-  // aqui você faz o que já fazia: enviar email, salvar, etc.
-  await sendEmail(dados);
+function normalizeTipo(tipo) {
+  const t = String(tipo || "").trim().toLowerCase();
+  if (t.includes("dupl")) return "duplicata";
+  if (t.includes("cheq")) return "cheque";
+  if (t.includes("contr")) return "contrato";
+  return t; // se já vier correto
+}
 
-  return `Perfeito! Recebi os dados e já encaminhei a proposta.\n\n` +
-    `Empresa: ${dados.nomeEmpresa}\n` +
-    `CNPJ: ${dados.cnpj}\n` +
-    `Valor: R$ ${dados.valor}\n` +
-    `Tipo: ${dados.tipo}\n` +
-    `Contato: ${dados.contato || "Não informado"}`;
+export async function executarFinalizacao(dados) {
+  const payload = dados || {};
+
+  const nomeEmpresa = String(payload.nomeEmpresa || "").trim();
+  const cnpj = String(payload.cnpj || "").trim();
+  const valor = String(payload.valor || "").trim();
+  const tipo = normalizeTipo(payload.tipo);
+  const contato = String(payload.contato || "").trim();
+
+  // validação mínima (evita mandar email vazio)
+  const faltando = [];
+  if (!nomeEmpresa) faltando.push("nomeEmpresa");
+  if (!cnpj) faltando.push("cnpj");
+  if (!valor) faltando.push("valor");
+  if (!tipo) faltando.push("tipo");
+
+  if (faltando.length) {
+    return `Quase lá — faltou(m) o(s) campo(s): ${faltando.join(", ")}. Pode me informar?`;
+  }
+
+  // envia email
+  await sendEmail({ nomeEmpresa, cnpj, valor, tipo, contato });
+
+  // retorno pro usuário
+  return (
+    `✅ Proposta registrada e encaminhada!\n\n` +
+    `Empresa: ${nomeEmpresa}\n` +
+    `CNPJ: ${cnpj}\n` +
+    `Valor: R$ ${valor}\n` +
+    `Tipo: ${tipo}\n` +
+    `Contato: ${contato || "Não informado"}`
+  );
 }
