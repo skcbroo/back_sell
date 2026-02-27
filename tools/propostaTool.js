@@ -1,44 +1,30 @@
-// tools/propostaTool.js
 const { sendEmail } = require('../services/emailService');
 
 const tools = [
   {
     type: 'function',
     function: {
-      name: 'finalizar_prioridade',
-      description: 'Chame quando o cliente informar sua prioridade e o telefone para contato.',
+      name: 'finalizar_proposta',
+      description: 'Chame quando todas as informações obrigatórias forem coletadas: nomeEmpresa, cnpj, valor, tipo.',
       parameters: {
         type: 'object',
         properties: {
-          prioridade: {
-            type: 'string',
-            enum: [
-              'Despesas médicas próprias ou de familiares',
-              'Pagamento de dívidas e organização financeira',
-              'Comprar um novo carro',
-              'Comprar um apartamento',
-              'Investir em negócio próprio'
-            ],
-            description: 'A prioridade escolhida pelo cliente.'
-          },
-          telefone: {
-            type: 'string',
-            description: 'Número de telefone para contato (com DDD).'
-          }
+          nomeEmpresa: { type: 'string' },
+          cnpj: { type: 'string' },
+          valor: { type: 'number' },
+          tipo: { type: 'string', enum: ['duplicata', 'cheque', 'contrato'] },
+          contato: { type: 'string' },
         },
-        required: ['prioridade', 'telefone']
-      }
-    }
-  }
+        required: ['nomeEmpresa', 'cnpj', 'valor', 'tipo'],
+      },
+    },
+  },
 ];
 
 async function executarFinalizacao(dados) {
-  console.log('Dados coletados:', dados);
-
-  // Envia e-mail para o administrador com as informações
+  console.log('Dados extraídos:', dados);
   await sendEmail(dados);
-
-  return `Obrigado por compartilhar sua prioridade! Um de nossos especialistas entrará em contato pelo telefone ${dados.telefone} em breve.`;
+  return `Proposta recebida! Obrigado, ${dados.nomeEmpresa}. Nossa equipe analisará e entrará em contato.`;
 }
 
 module.exports = { tools, executarFinalizacao };
