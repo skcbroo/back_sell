@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { tools, executarFinalizacao } from "../tools/propostaTool.js";
+import * as propostaTool from "../tools/propostaTool.js";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -14,6 +14,12 @@ export async function getLLMResponse(userMessage, history = []) {
     { role: "user", content: userMessage },
   ];
 
+  // pega tools e executarFinalizacao mesmo se o módulo vier como default
+  const tools = propostaTool.tools ?? propostaTool.default?.tools ?? [];
+  const executarFinalizacao =
+    propostaTool.executarFinalizacao ??
+    propostaTool.default?.executarFinalizacao;
+
   const response = await openai.chat.completions.create({
     model: "gpt-4o",
     messages,
@@ -27,6 +33,17 @@ export async function getLLMResponse(userMessage, history = []) {
     for (const toolCall of responseMessage.tool_calls) {
       if (toolCall?.function?.name === "finalizar_proposta") {
         const args = JSON.parse(toolCall.function.arguments || "{}");
+
+        if (typeof executarFinalizacao !== "function") {
+          console.error(
+            "executarFinalizacao não encontrado no propostaTool. Exports disponíveis:",
+            Object.keys(propostaTool),
+            "default keys:",
+            Object.keys(propostaTool.default || {})
+          );
+          return "Erro interno: ferramenta de finalização não configurada.";
+        }
+
         const confirmacao = await executarFinalizacao(args);
         return confirmacao;
       }
