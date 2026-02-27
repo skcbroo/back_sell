@@ -1,8 +1,8 @@
-import nodemailer from 'nodemailer';
+const nodemailer = require('nodemailer');
 
-export async function sendEmail(dados) {
+async function sendEmail(dados) {
   const transporter = nodemailer.createTransport({
-    service: 'gmail', // Use seu provedor
+    service: 'gmail',
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
@@ -25,3 +25,5 @@ export async function sendEmail(dados) {
   await transporter.sendMail(mailOptions);
   console.log('E-mail enviado com sucesso');
 }
+
+module.exports = { sendEmail };
